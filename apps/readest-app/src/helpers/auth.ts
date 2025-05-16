@@ -1,5 +1,6 @@
-import { User } from '@supabase/supabase-js';
-import { supabase } from '@/utils/supabase';
+import { createClient, User } from '@supabase/supabase-js';
+// import { supabase } from '@/utils/supabase';
+import { useServerStore } from '@/store/serverStore';
 
 interface UseAuthCallbackOptions {
   accessToken?: string | null;
@@ -32,6 +33,9 @@ export function handleAuthCallback({
       navigate('/library');
       return;
     }
+
+    const { supabaseUrl, supabaseAnonKey } = useServerStore();
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     const { error: err } = await supabase.auth.setSession({
       access_token: accessToken,

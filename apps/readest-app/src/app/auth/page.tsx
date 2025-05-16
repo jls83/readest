@@ -5,16 +5,18 @@ import { useRouter } from 'next/navigation';
 
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
+import { createClient } from '@supabase/supabase-js';
 import { FcGoogle } from 'react-icons/fc';
 import { FaApple } from 'react-icons/fa';
 import { FaGithub } from 'react-icons/fa';
 import { IoArrowBack } from 'react-icons/io5';
 
 import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/utils/supabase';
+// import { supabase } from '@/utils/supabase';
 import { useEnv } from '@/context/EnvContext';
 import { useTheme } from '@/hooks/useTheme';
 import { useThemeStore } from '@/store/themeStore';
+import { useServerStore } from '@/store/serverStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTrafficLightStore } from '@/store/trafficLightStore';
@@ -42,7 +44,7 @@ interface ProviderLoginProp {
   label: string;
 }
 
-const WEB_AUTH_CALLBACK = `${READEST_WEB_BASE_URL}/auth/callback`;
+// const WEB_AUTH_CALLBACK = `${READEST_WEB_BASE_URL}/auth/callback`;
 const DEEPLINK_CALLBACK = 'readest://auth-callback';
 const USE_APPLE_SIGN_IN = process.env['NEXT_PUBLIC_USE_APPLE_SIGN_IN'] === 'true';
 
@@ -69,18 +71,22 @@ export default function AuthPage() {
   const { isDarkMode } = useThemeStore();
   const { isTrafficLightVisible } = useTrafficLightStore();
   const { settings, setSettings, saveSettings } = useSettingsStore();
+  const { appBackendUrl, supabaseUrl, supabaseAnonKey } = useServerStore();
   const [port, setPort] = useState<number | null>(null);
   const isOAuthServerRunning = useRef(false);
   const [isMounted, setIsMounted] = useState(false);
 
   const headerRef = useRef<HTMLDivElement>(null);
 
+  const webAuthCallback = `${appBackendUrl}/auth/callback`;
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
   useTheme({ systemUIVisible: false });
 
   const getTauriRedirectTo = (isOAuth: boolean) => {
     if (process.env.NODE_ENV === 'production' || appService?.isMobileApp || USE_APPLE_SIGN_IN) {
       if (appService?.isMobileApp) {
-        return isOAuth ? DEEPLINK_CALLBACK : WEB_AUTH_CALLBACK;
+        return isOAuth ? DEEPLINK_CALLBACK : webAuthCallback;
       }
       return DEEPLINK_CALLBACK;
     }
@@ -92,7 +98,7 @@ export default function AuthPage() {
 
   const getWebRedirectTo = () => {
     return process.env.NODE_ENV === 'production'
-      ? WEB_AUTH_CALLBACK
+      ? webAuthCallback
       : `${window.location.origin}/auth/callback`;
   };
 

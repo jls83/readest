@@ -1,9 +1,10 @@
 'use client';
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { User } from '@supabase/supabase-js';
-import { supabase } from '@/utils/supabase';
+import { createClient, User } from '@supabase/supabase-js';
+// import { supabase } from '@/utils/supabase';
 import posthog from 'posthog-js';
+import { useServerStore } from '@/store/serverStore';
 
 interface AuthContextType {
   token: string | null;
@@ -28,6 +29,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     return null;
   });
+
+  const { supabaseUrl, supabaseAnonKey } = useServerStore();
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   useEffect(() => {
     const syncSession = (

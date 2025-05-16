@@ -1,13 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { NextRequest, NextResponse } from 'next/server';
-import { PostgrestError } from '@supabase/supabase-js';
-import { supabase, createSupabaseClient } from '@/utils/supabase';
+import { createClient, PostgrestError } from '@supabase/supabase-js';
+import { createSupabaseClient } from '@/utils/supabase';
 import { BookDataRecord } from '@/types/book';
 import { transformBookConfigToDB } from '@/utils/transform';
 import { transformBookNoteToDB } from '@/utils/transform';
 import { transformBookToDB } from '@/utils/transform';
 import { runMiddleware, corsAllMethods } from '@/utils/cors';
 import { SyncData, SyncResult, SyncType } from '@/libs/sync';
+import { useServerStore } from '@/store/serverStore';
 
 const transformsToDB = {
   books: transformBookToDB,
@@ -28,6 +29,9 @@ type DBError = { table: TableName; error: PostgrestError };
 const getUserAndToken = async (req: NextRequest) => {
   const authHeader = req.headers.get('authorization');
   if (!authHeader) return {};
+
+  const { supabaseUrl, supabaseAnonKey } = useServerStore();
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const token = authHeader.replace('Bearer ', '');
   try {

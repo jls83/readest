@@ -12,8 +12,8 @@ export const createSupabaseClient = (accessToken?: string) => {
     global: {
       headers: accessToken
         ? {
-            Authorization: `Bearer ${accessToken}`,
-          }
+          Authorization: `Bearer ${accessToken}`,
+        }
         : {},
     },
   });

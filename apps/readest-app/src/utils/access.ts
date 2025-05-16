@@ -2,7 +2,9 @@ import { jwtDecode } from 'jwt-decode';
 import { UserPlan } from '@/types/user';
 import { DEFAULT_STORAGE_QUOTA } from '@/services/constants';
 import { isWebAppPlatform } from '@/services/environment';
-import { supabase } from '@/utils/supabase';
+// import { supabase } from '@/utils/supabase';
+import { useServerStore } from '@/store/serverStore';
+import { createClient } from '@supabase/supabase-js';
 
 interface Token {
   plan: UserPlan;
@@ -36,6 +38,10 @@ export const getAccessToken = async (): Promise<string | null> => {
   if (isWebAppPlatform()) {
     return localStorage.getItem('token') ?? null;
   }
+
+  const { supabaseUrl, supabaseAnonKey } = useServerStore();
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
   const { data } = await supabase.auth.getSession();
   return data?.session?.access_token ?? null;
 };
@@ -45,12 +51,19 @@ export const getUserID = async (): Promise<string | null> => {
     const user = localStorage.getItem('user') ?? '{}';
     return JSON.parse(user).id ?? null;
   }
+
+  const { supabaseUrl, supabaseAnonKey } = useServerStore();
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
   const { data } = await supabase.auth.getSession();
   return data?.session?.user?.id ?? null;
 };
 
 export const validateUserAndToken = async (authHeader: string | undefined) => {
   if (!authHeader) return {};
+
+  const { supabaseUrl, supabaseAnonKey } = useServerStore();
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const token = authHeader.replace('Bearer ', '');
   const {

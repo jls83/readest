@@ -1,14 +1,19 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { corsAllMethods, runMiddleware } from '@/utils/cors';
-import { supabase } from '@/utils/supabase';
+// import { supabase } from '@/utils/supabase';
 import { getUserPlan } from '@/utils/access';
 import { query as deeplQuery } from '@/utils/deepl';
+import { useServerStore } from '@/store/serverStore';
+import { createClient } from '@supabase/supabase-js';
 
 const DEFAULT_DEEPL_FREE_API = 'https://api-free.deepl.com/v2/translate';
 const DEFAULT_DEEPL_PRO_API = 'https://api.deepl.com/v2/translate';
 
 const getUserAndToken = async (authHeader: string | undefined) => {
   if (!authHeader) return {};
+
+  const { supabaseUrl, supabaseAnonKey } = useServerStore();
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const token = authHeader.replace('Bearer ', '');
   const {

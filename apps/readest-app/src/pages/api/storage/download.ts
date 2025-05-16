@@ -1,10 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { supabase, createSupabaseClient } from '@/utils/supabase';
+import { createSupabaseClient } from '@/utils/supabase';
 import { corsAllMethods, runMiddleware } from '@/utils/cors';
 import { getDownloadSignedUrl } from '@/utils/object';
+import { useServerStore } from '@/store/serverStore';
+import { createClient } from '@supabase/supabase-js';
 
 const getUserAndToken = async (authHeader: string | undefined) => {
   if (!authHeader) return {};
+
+  const { supabaseUrl, supabaseAnonKey } = useServerStore();
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const token = authHeader.replace('Bearer ', '');
   const {
