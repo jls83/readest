@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import { READEST_WEB_BASE_URL } from '@/services/constants';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 interface ServerState {
   appBackendUrl: string;
@@ -10,6 +11,8 @@ interface ServerState {
   setAppBackendUrl: (appBackendUrl: string) => void;
   setSupabaseUrl: (supabaseUrl: string) => void;
   setSupabaseAnonKey: (supabaseAnonKey: string) => void;
+
+  getSupabaseClient: () => SupabaseClient<any, "public", any>;
 };
 
 const supabaseUrl =
@@ -17,7 +20,7 @@ const supabaseUrl =
 const supabaseAnonKey =
   process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'] || process.env['NEXT_PUBLIC_DEV_SUPABASE_ANON_KEY']!;
 
-export const useServerStore = create<ServerState>((set) => ({
+export const useServerStore = create<ServerState>((set, get) => ({
   appBackendUrl: READEST_WEB_BASE_URL,
   supabaseUrl,
   supabaseAnonKey,
@@ -30,5 +33,9 @@ export const useServerStore = create<ServerState>((set) => ({
   },
   setSupabaseAnonKey: (supabaseAnonKey: string) => {
     set(({ supabaseAnonKey }));
+  },
+
+  getSupabaseClient: () => {
+    const { supabaseUrl, supabaseAnonKey } = get();
   },
 }));
